@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">WeatherApp</string>
+    <string name="google_maps_key">AIzaSyDz7RtwSuEZv3VEY1bwBoCX1smnRxWH90Y</string>
+    <string name="channel_name">Temperature Update</string>
+    <string name="channel_description">A notification that provides you current weather condition</string>
+
+</resources>
