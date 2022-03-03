@@ -7,21 +7,24 @@ will also notify current temperature of your location every 1 hour.
 * Android SDK
 * Kotlin
 * Constraint Layout
-* View binding & Data binding
+* View Binding & Data Binding
 * Navigation components
-* Deep links
+* Deep Links
 * Kotlin Coroutines
 * Retrofit
 * Hilt
 * Work Manager
 * MVVM
-
+## Download
+Try the debug build of
+**[Weather App](https://github.com/SrizanX/weather_app/raw/main/apk/app-debug.apk)**
 ## Screenshots
 
 #### Splash Screen
 Created using [Splash Screen API](https://developer.android.com/guide/topics/ui/splash-screen).
 
 <img alt="Home" src="screenshots/splashscreen.png" width="300"/>
+<img alt="Home" src="screenshots/splashscreen_dark.png" width="300"/>
 
 #### Home Screen
 
