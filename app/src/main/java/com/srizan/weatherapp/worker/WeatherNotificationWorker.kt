@@ -13,7 +13,6 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.srizan.weatherapp.network.WeatherRepository
 import com.srizan.weatherapp.utils.sendNotification

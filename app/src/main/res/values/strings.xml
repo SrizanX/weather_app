@@ -3,5 +3,7 @@
     <string name="google_maps_key">AIzaSyDz7RtwSuEZv3VEY1bwBoCX1smnRxWH90Y</string>
     <string name="channel_name">Temperature Update</string>
     <string name="channel_description">A notification that provides you current weather condition</string>
+    <string name="rationale">Location permission is needed to provide you current temperature of your last location!</string>
+    <string name="rationale_background_location">Please "Allow location all the time" to get notification when the app is closed!</string>
 
 </resources>

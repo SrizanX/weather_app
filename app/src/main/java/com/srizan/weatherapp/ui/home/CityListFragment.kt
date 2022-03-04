@@ -1,5 +1,6 @@
 package com.srizan.weatherapp.ui.home
 
+import android.Manifest
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
@@ -29,11 +30,11 @@ class CityListFragment : Fragment() {
     private lateinit var viewModel: CityListViewModel
     private lateinit var binding: CityListFragmentBinding
 
-
     private val networkRequest: NetworkRequest = NetworkRequest.Builder()
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
         .build()
+
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         // When network is available for use
         override fun onAvailable(network: Network) {
@@ -45,22 +46,37 @@ class CityListFragment : Fragment() {
         }
     }
 
-    private val requestPermissionLauncher =
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private val requestFineLocationPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
-        ) { isGranted->
-            if (!isGranted){
-                Toast.makeText(requireContext(),"You will not receive any location update...",Toast.LENGTH_SHORT).show()
+        ) { isGranted ->
+            if (isGranted) {
+                showRationale(
+                    getString(R.string.rationale_background_location),
+                    "Ok"
+                ) {
+                    requestBackgroundLocation()
+                }
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Background notification will not work without location permission!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private val requestBackgroundPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
-    @RequiresApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        viewModel = ViewModelProvider(this).get(CityListViewModel::class.java)
+    ): View {
+        viewModel = ViewModelProvider(this)[CityListViewModel::class.java]
         binding = CityListFragmentBinding.inflate(inflater, container, false)
 
         val cityListAdapter = CityListAdapter()
@@ -68,7 +84,7 @@ class CityListFragment : Fragment() {
             cityListAdapter.submitList(cityList)
         }
 
-        viewModel.isLoading.observe(viewLifecycleOwner) { loading->
+        viewModel.isLoading.observe(viewLifecycleOwner) { loading ->
             if (loading) {
                 binding.imageViewFailure.visibility = View.GONE
                 binding.progressBar.visibility = View.VISIBLE
@@ -96,42 +112,63 @@ class CityListFragment : Fragment() {
         )
         val connectivityManager = requireContext().getSystemService(ConnectivityManager::class.java)
         connectivityManager.requestNetwork(networkRequest, networkCallback)
-        requestPermission()
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_DENIED
+        ) {
+            requestLocationPermission()
+        }
         return binding.root
     }
 
-    private fun requestPermission() {
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun requestLocationPermission() {
         when {
             ContextCompat.checkSelfPermission(
                 requireContext(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
-                //Do nothing
+                if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                    showRationale(
+                        getString(R.string.rationale_background_location),
+                        "Ok"
+                    ) {
+                        requestBackgroundLocation()
+                    }
+                }
             }
-            shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION) -> {
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 //Show a snackbar with information why permission is needed
-                showRationale()
+                showRationale(getString(R.string.rationale), "Allow") {
+                    requestFineLocation()
+                }
             }
             else -> {
-                launchRequestDialog()
+                requestFineLocation()
             }
         }
     }
 
-    private fun launchRequestDialog() {
-        requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun requestFineLocation() {
+        requestFineLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
-    private fun showRationale() {
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun requestBackgroundLocation() {
+        requestBackgroundPermission.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun showRationale(message: String, action: String, block: () -> Unit) {
         Snackbar.make(
             requireActivity().findViewById(R.id.nav_host_fragment),
-            "Location permission is needed to provide you current temperature of your last location!",
+            message,
             Snackbar.LENGTH_INDEFINITE
-        )
-            .setAction("Allow") {
-                launchRequestDialog()
-            }
-            .show()
-
+        ).setAction(action) {
+            block.invoke()
+        }.show()
     }
 }
